@@ -21,4 +21,6 @@ public interface JobService {
     Job getJobByTitle(String title);
 
     Page<JobResponse> getJobsByCriteria(JobCriteria criteria, Integer pageNumber, Integer pageSize);
+
+    Job updateJob(Long id, JobRequest jobRequest);
 }

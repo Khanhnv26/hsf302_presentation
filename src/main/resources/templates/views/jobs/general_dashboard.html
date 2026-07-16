@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="container-fluid">
@@ -37,11 +38,11 @@
                         </ul>
                     </li>
                 </ul>
-                <form class="d-flex" method="get" th:action="@{/jobs}">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
-                           name="keyword" th:value="${param.keyword}">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
+                <div class="d-flex align-items-center gap-2">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search (async)..."
+                           aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="button" id="modeToggle">jQuery</button>
+                </div>
             </div>
         </div>
     </nav>
@@ -53,6 +54,7 @@
             </div>
             <hr>
             <p class="text-success" th:text="${message}"></p>
+
             <table class="table table-striped align-middle">
                 <thead>
                 <tr>
@@ -68,48 +70,66 @@
                     <th scope="col" class="w-25">Actions</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr th:each="job: ${jobs}">
-                    <td th:text="${job.id}"></td>
-                    <td th:text="${job.title}"></td>
-                    <td th:text="${job.description}"></td>
-                    <td th:text="${job.location}"></td>
-                    <td th:text="${job.minSalary}"></td>
-                    <td th:text="${job.maxSalary}"></td>
-                    <td>
-                        <span class="badge"
-                              th:classappend="${job.status == 'PUBLISH'} ? 'bg-success' : (${job.status == 'DELETED'} ? 'bg-danger' : 'bg-secondary')"
-                              th:text="${job.status}"></span>
-                    </td>
-                    <td th:text="${job.deadline != null} ? ${#temporals.format(job.deadline, 'dd MMM yyyy')} : '-'"></td>
-                    <td th:text="${job.publishedAt != null} ? ${#temporals.format(job.publishedAt, 'dd MMM yyyy')} : '-'"></td>
-                    <td>
-                        <a type="button" class="btn btn-primary btn-sm" th:href="@{'/jobs/' + ${job.id}}">Edit</a>
-                        <a type="button" class="btn btn-danger btn-sm" th:id="${job.id}">Delete</a>
-                    </td>
-                </tr>
-                <tr th:if="${jobs == null or jobs.isEmpty()}">
-                    <td colspan="10" class="text-center text-muted py-4">No jobs found.</td>
-                </tr>
+                <tbody id="jobTable">
                 </tbody>
             </table>
+
+            <!-- TODO C: delete confirm modal (#deleteConfirmModal) -->
         </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+
+<script th:src="@{/dashboard-async.js}"></script>
+
+<!-- ============ Fallback (sync Thymeleaf version - comment lại để rollback nếu async lỗi) ============
+<div class="row p-4 d-flex justify-content-center">
+    <div class="col-md-11">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>#</th><th>Title</th><th>Description</th><th>Location</th>
+                <th>Min Salary</th><th>Max Salary</th><th>Status</th>
+                <th>Deadline</th><th>Published At</th><th class="w-25">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="job: ${jobs}">
+                <td th:text="${job.id}"></td>
+                <td th:text="${job.title}"></td>
+                <td th:text="${job.description}"></td>
+                <td th:text="${job.location}"></td>
+                <td th:text="${job.minSalary}"></td>
+                <td th:text="${job.maxSalary}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${job.status == 'PUBLISH'} ? 'bg-success' : (${job.status == 'DELETED'} ? 'bg-danger' : 'bg-secondary')"
+                          th:text="${job.status}"></span>
+                </td>
+                <td th:text="${job.deadline != null} ? ${#temporals.format(job.deadline, 'dd MMM yyyy')} : '-'"></td>
+                <td th:text="${job.publishedAt != null} ? ${#temporals.format(job.publishedAt, 'dd MMM yyyy')} : '-'"></td>
+                <td>
+                    <a type="button" class="btn btn-primary btn-sm" th:href="@{'/jobs/' + ${job.id}}">Edit</a>
+                    <a type="button" class="btn btn-danger btn-sm" th:id="${job.id}">Delete</a>
+                </td>
+            </tr>
+            <tr th:if="${jobs == null or jobs.isEmpty()}">
+                <td colspan="10" class="text-center text-muted py-4">No jobs found.</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 <script type="text/javascript">
     document.querySelectorAll(".btn-danger")
         .forEach((item => item.addEventListener("click", function (event) {
                 const id = event.target.id;
-
-                console.log(id);
-
                 const confirm = window.confirm("Do you want delete this");
-
-                if (confirm) {
-                    window.location.href = "jobs/" + id + "/delete";
-                }
+                if (confirm) { window.location.href = "jobs/" + id + "/delete"; }
             })
         ));
 </script>
+-->
 </body>
 </html>

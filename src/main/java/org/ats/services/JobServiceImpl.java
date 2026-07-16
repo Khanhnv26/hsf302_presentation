@@ -79,6 +79,18 @@ public class JobServiceImpl implements JobService {
         return jobRepository.findAllByStatusAndKeyword(JobStatus.PUBLISH.toString(), criteria.getKeyword().trim(), pageable);
     }
 
+    @Override
+    public Job updateJob(Long id, JobRequest jobRequest) {
+        // TODO C: load existing job by id, gán field từ jobRequest, save & return.
+        // Ném JobNotFoundException nếu id không tồn tại.
+        return null;
+    }
+
+    // TODO A: hiện thực toJobDto(Job) -> JobDto cho REST API (đủ field: status, departmentId, skillIds, publishedAt).
+    private org.ats.dto.JobDto toJobDto(Job job) {
+        return null;
+    }
+
     private JobRequest toDto(Job job) {
         JobRequest jobRequest = JobRequest.builder()
                 .id(job.getId())

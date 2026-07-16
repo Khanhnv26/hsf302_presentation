@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="container-fluid">
@@ -37,35 +38,36 @@
                         </ul>
                     </li>
                 </ul>
+                <button class="btn btn-outline-secondary" type="button" id="modeToggle">jQuery</button>
             </div>
         </div>
     </nav>
 
     <div class="row p-4 d-flex justify-content-center mt-3">
-        <h2>Job Detail</h2>
+        <h2 id="formTitle">Job Detail</h2>
         <hr>
         <div class="text-success" th:text="${message}"></div>
-        <form class="row" th:action="@{/jobs}" th:object="${job}" method="post" id="job-form">
+        <form class="row" id="job-form" method="post">
             <div class="col-md-5">
                 <!--Left-->
                 <div class="mb-3">
                     <label class="form-label">Title</label>
-                    <input type="text" class="form-control" th:field="*{title}" required placeholder="Enter job title">
+                    <input type="text" class="form-control" name="title" id="title" required placeholder="Enter job title">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Location</label>
-                    <input type="text" class="form-control" th:field="*{location}" required placeholder="Enter job location">
+                    <input type="text" class="form-control" name="location" id="location" required placeholder="Enter job location">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Min salary</label>
-                    <input type="number" th:field="*{minSalary}" class="form-control" required>
+                    <input type="number" name="minSalary" id="minSalary" class="form-control" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Max salary</label>
-                    <input type="number" th:field="*{maxSalary}" class="form-control" required>
+                    <input type="number" name="maxSalary" id="maxSalary" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary px-5">Save</button>
+                <button type="submit" class="btn btn-primary px-5" id="saveBtn">Save</button>
                 <a type="button" class="btn btn-secondary px-5" th:href="@{/jobs}">Close</a>
 
             </div>
@@ -73,28 +75,21 @@
                 <!--Right-->
                 <div class="mb-3">
                     <label class="form-label">Deadline</label>
-                    <input type="date" th:field="*{deadline}" class="form-control" required>
+                    <input type="date" name="deadline" id="deadline" class="form-control" required>
                 </div>
 
-                <select class="form-select mb-3" aria-label="Default select example" th:field="*{departmentId}">
+                <select class="form-select mb-3" name="departmentId" id="departmentId">
                     <option selected value="">Open this select menu</option>
-                    <option th:each="dept: ${departments}" th:value="${dept.id}"
-                            th:text="${dept.departmentName}"></option>
                 </select>
 
                 <div class="mb-3">
                     <label class="form-label">Skills</label>
-
-                    <div class="form-check form-check-inline" th:each="skill: ${skills}">
-                        <input class="form-check-input" type="checkbox"
-                               th:value="${skill.id}" th:field="*{skillIds}">
-                        <label class="form-check-label" th:text="${skill.skillName}"></label>
-                    </div>
+                    <div id="skillIds" class="d-flex flex-wrap gap-3"></div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Description</label>
-                    <textarea class="form-control" rows="6" th:field="*{description}"></textarea>
+                    <textarea class="form-control" rows="6" name="description" id="description"></textarea>
                 </div>
 
                  </div>
@@ -102,5 +97,15 @@
     </div>
 
 </div>
+
+<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+
+<script th:src="@{/job-form-async.js}"></script>
+
+<!-- ============ Fallback (sync Thymeleaf version - comment lại để rollback nếu async lỗi) ============
+<form class="row" th:action="@{/jobs}" th:object="${job}" method="post" id="job-form-sync">
+    ... (giữ form Thymeleaf th:object="${job}" + th:each departments/skills) ...
+</form>
+-->
 </body>
 </html>
