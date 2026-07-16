@@ -1,0 +1,135 @@
+/* =========================================================
+   Job Board - brand theme
+   Keep custom CSS minimal: only brand colors & a few tweaks.
+   Layout is handled by Bootstrap utility classes.
+   ========================================================= */
+:root {
+    --jb-navy: #2f3b52;       /* header / footer background */
+    --jb-navy-dark: #29344a;
+    --jb-green: #20c761;      /* primary accent */
+    --jb-green-dark: #1bb157;
+    --jb-bg: #f5f6fa;         /* page background */
+    --jb-muted: #8a94a6;
+}
+
+body {
+    background-color: var(--jb-bg);
+    color: #3c4453;
+}
+
+/* ---------- Header ---------- */
+.jb-header {
+    background-color: var(--jb-navy);
+}
+
+.jb-brand-logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background-color: var(--jb-green);
+    color: #fff;
+    font-size: 1.3rem;
+    box-shadow: 0 0 0 4px rgba(32, 199, 97, .25);
+}
+
+.jb-header .nav-link {
+    color: #d7dce5;
+    font-weight: 500;
+}
+
+.jb-header .nav-link:hover,
+.jb-header .nav-link:focus {
+    color: #fff;
+}
+
+.jb-header .jb-category {
+    background-color: transparent;
+    color: #c2c9d6;
+    border-color: rgba(255, 255, 255, .15);
+    max-width: 200px;
+}
+
+/* ---------- Buttons ---------- */
+.btn-jb {
+    background-color: var(--jb-green);
+    border-color: var(--jb-green);
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-jb:hover,
+.btn-jb:focus {
+    background-color: var(--jb-green-dark);
+    border-color: var(--jb-green-dark);
+    color: #fff;
+}
+
+/* ---------- Browse Job ---------- */
+.jb-card {
+    border: 1px solid #eef0f4;
+    border-radius: .65rem;
+}
+
+.jb-card.is-active {
+    border-color: var(--jb-green);
+    box-shadow: 0 6px 18px rgba(32, 199, 97, .12);
+}
+
+.jb-job-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: .5rem;
+    background-color: #f4f6f9;
+}
+
+.jb-fav {
+    width: 42px;
+    height: 42px;
+    border-radius: .5rem;
+    background-color: #e9faf0;
+    color: var(--jb-green);
+    border: none;
+}
+
+.jb-meta {
+    color: var(--jb-muted);
+    font-size: .9rem;
+}
+
+/* tint the native range slider green */
+.jb-range {
+    accent-color: var(--jb-green);
+}
+
+/* ---------- Footer ---------- */
+.jb-footer {
+    background-color: var(--jb-navy);
+    color: #aeb6c4;
+}
+
+.jb-footer a {
+    color: #aeb6c4;
+    text-decoration: none;
+}
+
+.jb-footer a:hover {
+    color: #fff;
+}
+
+.jb-footer h6 {
+    color: #fff;
+    letter-spacing: .3px;
+}
+
+.jb-social {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, .08);
+    color: #fff;
+}
+
+.jb-social:hover {
+    background-color: var(--jb-green);
+    color: #fff;
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{views/layout/public_layout.html}">
+<title>Job Board</title>
+<body>
+<!-- ===== Browse Job ===== -->
+<main layout:fragment="content" class="container-fluid px-lg-5 py-5">
+    <div class="row g-4">
+
+        <!-- ---------- Filter sidebar ---------- -->
+        <aside class="col-lg-3">
+            <div class="bg-white rounded-3 shadow-sm p-4">
+                <h5 class="fw-semibold mb-4">Filter</h5>
+
+                <form th:action="@{/jobs/browse}" method="get" class="d-grid gap-3">
+                    <input type="text" name="keyword" th:value="${param.keyword}"
+                           class="form-control" placeholder="Search keyword">
+
+                    <select class="form-select text-muted" name="location">
+                        <option value="" selected>Location</option>
+                        <option value="Hà Nội">Hà Nội</option>
+                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                    </select>
+
+                    <select class="form-select text-muted" name="category">
+                        <option value="" selected>Category</option>
+                        <!--                        <option th:each="dept : ${departments}"-->
+                        <!--                                th:value="${dept.id}" th:text="${dept.departmentName}"></option>-->
+                    </select>
+
+                    <select class="form-select text-muted" name="experience">
+                        <option value="" selected>Experience</option>
+                        <option value="fresher">Fresher</option>
+                        <option value="junior">1 - 3 years</option>
+                        <option value="senior">3+ years</option>
+                    </select>
+
+                    <select class="form-select text-muted" name="jobType">
+                        <option value="" selected>Job type</option>
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="remote">Remote</option>
+                    </select>
+
+                    <select class="form-select text-muted" name="qualification">
+                        <option value="" selected>Qualification</option>
+                        <option value="bachelor">Bachelor</option>
+                        <option value="master">Master</option>
+                        <option value="other">Other</option>
+                    </select>
+
+                    <select class="form-select text-muted" name="gender">
+                        <option value="" selected>Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="any">Any</option>
+                    </select>
+
+                    <div>
+                        <label class="form-label fw-medium mb-2">Price range:</label>
+                        <input type="range" class="form-range jb-range" min="750" max="24600" value="24600"
+                               name="salary">
+                        <div class="jb-meta">$750 - $24600/ Year</div>
+                    </div>
+
+                    <button type="reset" class="btn btn-jb w-100 mt-2 py-2">Reset</button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- ---------- Job listing ---------- -->
+        <section class="col-lg-9">
+            <!-- toolbar -->
+            <div class="bg-white rounded-3 shadow-sm d-flex justify-content-between align-items-center p-4 mb-4">
+                <h5 class="fw-semibold mb-0">Job Listing</h5>
+                <select class="form-select w-auto" name="sort">
+                    <option value="recent" selected>Most Recent</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="salary">Highest Salary</option>
+                </select>
+            </div>
+
+            <!-- cards -->
+            <div class="d-grid gap-3">
+
+                <!-- one card per job -->
+                <article th:each="job : ${jobs}"
+                         class="jb-card bg-white shadow-sm p-4 d-flex align-items-center gap-4 flex-wrap">
+                    <div class="jb-job-logo d-inline-flex align-items-center justify-content-center text-success fs-3">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+
+                    <div class="flex-grow-1" style="min-width: 220px;">
+                        <a class="h5 fw-semibold text-dark text-decoration-none d-block mb-2"
+                           th:href="@{'/jobs/' + ${job.id}}" th:text="${job.title}">Software Engineer</a>
+                        <div class="d-flex flex-wrap gap-4 jb-meta">
+                            <span><i class="bi bi-geo-alt me-1"></i><span
+                                    th:text="${job.location} ?: 'California, USA'">California, USA</span></span>
+                            <span><i class="bi bi-clock me-1"></i><span
+                                    th:text="${job.jobType} ?: 'Part-time'">Part-time</span></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="jb-fav d-inline-flex align-items-center justify-content-center"
+                                    title="Save job">
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+                            <a class="btn btn-jb px-4" th:href="@{'/jobs/' + ${job.id}}">Apply Now</a>
+                        </div>
+                        <small class="jb-meta fst-italic">
+                            Date line: <span
+                                th:text="${job.deadline != null} ? ${#temporals.format(job.deadline, 'dd MMM yyyy')} : '31 Jan 2020'">31 Jan 2020</span>
+                        </small>
+                    </div>
+                </article>
+
+                <!-- empty state -->
+                <div th:if="${jobs == null or jobs.isEmpty()}"
+                     class="jb-card bg-white shadow-sm p-5 text-center jb-meta">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    No jobs found. Try adjusting your filters.
+                </div>
+
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                        </li>
+                        <li th:each="index: ${#numbers.sequence(1, totalPage)}" class="page-item"><a class="page-link" th:href="@{/public/jobs(pageNumber=${index}-1)}" th:text="${index}"></a></li>
+
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- Bootstrap JS bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+</html>
