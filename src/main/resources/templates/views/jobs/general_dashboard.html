@@ -8,13 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
-
 </head>
 <body>
 <div class="container-fluid">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">ATS</a>
+            <a class="navbar-brand fw-bold" th:href="@{/}">ATS</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
@@ -23,43 +22,38 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Job Management</a>
+                        <a class="nav-link active" aria-current="page" th:href="@{/jobs}">Job Management</a>
                     </li>
-
-                    <li class="nav-item dropdown">
-                        <a th:if="${session.user!=null}" class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
-                           role="button"
+                    <li class="nav-item dropdown" th:if="${session.user != null}">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false" th:text="${session.user.fullName}">
-
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                            <li><a class="dropdown-item" th:href="@{/auths/logout}">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <form class="d-flex" method="get" th:action="@{/jobs}">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                           name="keyword" th:value="${param.keyword}">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
-
             </div>
         </div>
     </nav>
     <div class="row p-4 d-flex justify-content-center">
         <div class="col-md-11">
-
-            <h3>General Dashboard</h3>
-
-            <a class="btn btn-info" th:href="@{/jobs/detail}">Create new</a>
-
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">General Dashboard</h3>
+                <a class="btn btn-info" th:href="@{/jobs/detail}">Create new</a>
+            </div>
             <hr>
             <p class="text-success" th:text="${message}"></p>
-            <table class="table">
+            <table class="table table-striped align-middle">
                 <thead>
                 <tr>
                     <th scope="col">#</th>
@@ -71,7 +65,7 @@
                     <th scope="col">Status</th>
                     <th scope="col">Deadline</th>
                     <th scope="col">Published At</th>
-                    <th scope="col" class="w-25"></th>
+                    <th scope="col" class="w-25">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -82,23 +76,26 @@
                     <td th:text="${job.location}"></td>
                     <td th:text="${job.minSalary}"></td>
                     <td th:text="${job.maxSalary}"></td>
-                    <td th:text="${job.status}"></td>
-                    <td th:text="${job.deadline}"></td>
-                    <td th:text="${job.publishedAt}"></td>
                     <td>
-                        <a type="button" href="#" class="btn btn-primary" th:href="@{'/jobs/' + ${job.id}}">Edit</a>
-                        <a type="button" href="#" class="btn btn-danger" th:id="${job.id}">Delete</a>
+                        <span class="badge"
+                              th:classappend="${job.status == 'PUBLISH'} ? 'bg-success' : (${job.status == 'DELETED'} ? 'bg-danger' : 'bg-secondary')"
+                              th:text="${job.status}"></span>
                     </td>
+                    <td th:text="${job.deadline != null} ? ${#temporals.format(job.deadline, 'dd MMM yyyy')} : '-'"></td>
+                    <td th:text="${job.publishedAt != null} ? ${#temporals.format(job.publishedAt, 'dd MMM yyyy')} : '-'"></td>
+                    <td>
+                        <a type="button" class="btn btn-primary btn-sm" th:href="@{'/jobs/' + ${job.id}}">Edit</a>
+                        <a type="button" class="btn btn-danger btn-sm" th:id="${job.id}">Delete</a>
+                    </td>
+                </tr>
+                <tr th:if="${jobs == null or jobs.isEmpty()}">
+                    <td colspan="10" class="text-center text-muted py-4">No jobs found.</td>
                 </tr>
                 </tbody>
             </table>
         </div>
-
-
     </div>
 </div>
-
-</body>
 <script type="text/javascript">
     document.querySelectorAll(".btn-danger")
         .forEach((item => item.addEventListener("click", function (event) {
@@ -114,4 +111,5 @@
             })
         ));
 </script>
+</body>
 </html>

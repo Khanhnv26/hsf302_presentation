@@ -31,7 +31,6 @@ public class JobController {
         List<SkillResponse> skills = skillService.findAll();
         // Add to model
         ModelAndView mv = new ModelAndView("jobs/job_detail");
-        mv.setViewName("jobs/job_detail");
         mv.addObject("departments", departments);
         mv.addObject("skills", skills);
         mv.addObject("job", new JobRequest());
@@ -55,7 +54,7 @@ public class JobController {
 
         model.addAttribute("message", "Create a new job successful");
 
-        return "/jobs/job_detail";
+        return "jobs/job_detail";
     }
 
     @GetMapping

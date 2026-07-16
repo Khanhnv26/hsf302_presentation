@@ -133,3 +133,17 @@ body {
     background-color: var(--jb-green);
     color: #fff;
 }
+
+/* ---------- Hero (home) ---------- */
+.jb-hero {
+    background: linear-gradient(135deg, var(--jb-navy) 0%, var(--jb-navy-dark) 100%);
+}
+
+.max-w-600 {
+    max-width: 600px;
+}
+
+/* Bootstrap Icons fallback color in hero */
+.jb-hero .bi {
+    color: var(--jb-green);
+}

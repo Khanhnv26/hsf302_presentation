@@ -4,7 +4,7 @@
 <title>Job Board</title>
 <body>
 <!-- ===== Browse Job ===== -->
-<main layout:fragment="content" class="container-fluid px-lg-5 py-5">
+<main layout:fragment="content" th:with="active='browse'" class="container-fluid px-lg-5 py-5">
     <div class="row g-4">
 
         <!-- ---------- Filter sidebar ---------- -->
@@ -12,8 +12,8 @@
             <div class="bg-white rounded-3 shadow-sm p-4">
                 <h5 class="fw-semibold mb-4">Filter</h5>
 
-                <form th:action="@{/jobs/browse}" method="get" class="d-grid gap-3">
-                    <input type="text" name="keyword" th:value="${param.keyword}"
+                <form th:action="@{/public/jobs}" method="get" class="d-grid gap-3">
+                    <input type="text" name="keyword" th:value="${keyword}"
                            class="form-control" placeholder="Search keyword">
 
                     <select class="form-select text-muted" name="location">
@@ -93,7 +93,7 @@
 
                     <div class="flex-grow-1" style="min-width: 220px;">
                         <a class="h5 fw-semibold text-dark text-decoration-none d-block mb-2"
-                           th:href="@{'/jobs/' + ${job.id}}" th:text="${job.title}">Software Engineer</a>
+                           th:href="@{/public/jobs}" th:text="${job.title}">Software Engineer</a>
                         <div class="d-flex flex-wrap gap-4 jb-meta">
                             <span><i class="bi bi-geo-alt me-1"></i><span
                                     th:text="${job.location} ?: 'California, USA'">California, USA</span></span>
@@ -108,7 +108,7 @@
                                     title="Save job">
                                 <i class="bi bi-heart-fill"></i>
                             </button>
-                            <a class="btn btn-jb px-4" th:href="@{'/jobs/' + ${job.id}}">Apply Now</a>
+                            <a class="btn btn-jb px-4" th:href="@{/public/jobs}">Apply Now</a>
                         </div>
                         <small class="jb-meta fst-italic">
                             Date line: <span
@@ -129,7 +129,9 @@
                         <li class="page-item disabled">
                             <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
                         </li>
-                        <li th:each="index: ${#numbers.sequence(1, totalPage)}" class="page-item"><a class="page-link" th:href="@{/public/jobs(pageNumber=${index}-1)}" th:text="${index}"></a></li>
+                        <li th:each="index: ${#numbers.sequence(1, totalPage)}" class="page-item">
+                            <a class="page-link" th:href="@{/public/jobs(pageNumber=${index}-1, keyword=${keyword})}" th:text="${index}"></a>
+                        </li>
 
                         <li class="page-item">
                             <a class="page-link" href="#">Next</a>

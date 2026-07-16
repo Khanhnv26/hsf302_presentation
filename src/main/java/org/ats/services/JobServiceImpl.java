@@ -9,7 +9,6 @@ import org.ats.entities.*;
 import org.ats.exceptions.JobNotFoundException;
 import org.ats.repositories.JobRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -67,17 +67,16 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public Job getJobByTitle(String title) {
-        return null;
+        return jobRepository.findByTitle(title).orElse(null);
     }
 
     @Override
     public Page<JobResponse> getJobsByCriteria(JobCriteria criteria, Integer pageNumber, Integer pageSize) {
-        if (criteria == null) {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<JobResponse> page = jobRepository.findAllByStatus(JobStatus.PUBLISH.toString(), pageable);
-            return page;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        if (criteria == null || criteria.getKeyword() == null || criteria.getKeyword().isBlank()) {
+            return jobRepository.findAllByStatus(JobStatus.PUBLISH.toString(), pageable);
         }
-        return new PageImpl(null);
+        return jobRepository.findAllByStatusAndKeyword(JobStatus.PUBLISH.toString(), criteria.getKeyword().trim(), pageable);
     }
 
     private JobRequest toDto(Job job) {
@@ -121,7 +120,9 @@ public class JobServiceImpl implements JobService {
         Job job = Job.builder()
                 .id(jobRequest.getId())
                 .title(jobRequest.getTitle())
-                .deadline(OffsetDateTime.of(jobRequest.getDeadline(), LocalTime.now(), ZoneOffset.ofHours(7)))
+                .deadline(jobRequest.getDeadline() != null
+                        ? OffsetDateTime.of(jobRequest.getDeadline(), LocalTime.now(), ZoneOffset.ofHours(7))
+                        : null)
                 .description(jobRequest.getDescription())
                 .location(jobRequest.getLocation())
                 .maxSalary(jobRequest.getMaxSalary())

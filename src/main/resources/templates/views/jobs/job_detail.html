@@ -8,43 +8,32 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
-
 </head>
 <body>
 <div class="container-fluid">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">ATS</a>
+            <a class="navbar-brand fw-bold" th:href="@{/}">ATS</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mb-2 mb-lg-0">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Job Management</a>
+                        <a class="nav-link active" aria-current="page" th:href="@{/jobs}">Job Management</a>
                     </li>
-                </ul>
-
-                <form class="d-flex mx-auto my-2 my-lg-0" style="flex: 1; max-width: 600px;">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown" th:if="${session.user != null}">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false" th:text="${session.user.fullName}">
-
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                            <li><a class="dropdown-item" th:href="@{/auths/logout}">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -52,7 +41,7 @@
         </div>
     </nav>
 
-    <div class="row p-4 d-flex justify-content-center mt-5">
+    <div class="row p-4 d-flex justify-content-center mt-3">
         <h2>Job Detail</h2>
         <hr>
         <div class="text-success" th:text="${message}"></div>
@@ -113,13 +102,5 @@
     </div>
 
 </div>
-<script>
-    // document.getElementById("#job-form").addEventListener("submit", (e) => {
-    //     e.preventDefault();
-    //
-    //     const  data = fetch("/api/jobs", {})
-    //
-    // })
-</script>
 </body>
 </html>

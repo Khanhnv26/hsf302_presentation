@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
@@ -20,9 +21,22 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByTitleContainingOrDescriptionContaining(String title, String des);
     List<Job> findByStatus(String status);
 
+    Optional<Job> findByTitle(String title);
+
     @Query("""
             SELECT new org.ats.dto.JobResponse(j.id, j.title, j.description, j.location, j.minSalary, j.maxSalary, j.deadline, j.jobType) FROM Job j WHERE j.status = :status
         """)
     Page<JobResponse> findAllByStatus(@Param("status") String status, Pageable pageable);
+
+    @Query("""
+            SELECT new org.ats.dto.JobResponse(j.id, j.title, j.description, j.location, j.minSalary, j.maxSalary, j.deadline, j.jobType)
+            FROM Job j
+            WHERE j.status = :status
+              AND (LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        """)
+    Page<JobResponse> findAllByStatusAndKeyword(@Param("status") String status,
+                                                @Param("keyword") String keyword,
+                                                Pageable pageable);
 
 }

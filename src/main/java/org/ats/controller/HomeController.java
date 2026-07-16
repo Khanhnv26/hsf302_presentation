@@ -10,12 +10,13 @@ public class HomeController {
 
     @GetMapping
     public String home() {
-
-        // Logic OK: service-> repository
-
-
         // Return view
-        return "views/public/home"; // prefix + "index" + suffix -> /WEB-INF/index.jsp
+        return "views/public/home";
+    }
+
+    @GetMapping("/contact")
+    public String contact() {
+        return "views/public/contact";
     }
 
 }

@@ -21,7 +21,7 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login() {
-        return "/views/auths/login";
+        return "views/auths/login";
     }
 
     @PostMapping("/login")
@@ -42,6 +42,12 @@ public class AuthController {
         mv.setViewName("redirect:/jobs");
 
         return mv;
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/auths/login";
     }
 
 }
