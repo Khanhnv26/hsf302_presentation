@@ -74,14 +74,7 @@ public class JobServiceImpl implements JobService {
     public Page<JobResponse> getJobsByCriteria(JobCriteria criteria, Integer pageNumber, Integer pageSize) {
         if (criteria == null) {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<JobResponse> page = jobRepository.findAllByStatus("OPEN", pageable);
-
-
-//            List<Job> jobs = jobRepository.findByStatus("OPEN");
-
-//            List<JobResponse> jobResponses = jobs.stream().map((job) -> new JobResponse(job.getId(),
-//                    job.getTitle(), job.getDescription(), job.getLocation(),
-//                    job.getMinSalary(), job.getMaxSalary(), job.getDeadline().toLocalDate(), job.getJobType())).collect(Collectors.toList());
+            Page<JobResponse> page = jobRepository.findAllByStatus(JobStatus.PUBLISH.toString(), pageable);
             return page;
         }
         return new PageImpl(null);
