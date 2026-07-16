@@ -24,6 +24,6 @@ public class ApiExceptionHandling {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> runtimeError(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", ex.getMessage()));
     }
 }

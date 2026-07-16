@@ -15,12 +15,14 @@ public interface JobService {
 
     List<Job> getAll(String keyword);
 
+    List<JobRequest> getAllAsDto(String keyword);
+
     void delete(Long id);
 
     JobRequest getJobById(Long id);
     Job getJobByTitle(String title);
 
     Page<JobResponse> getJobsByCriteria(JobCriteria criteria, Integer pageNumber, Integer pageSize);
-
+    JobRequest toDto(Job job);
     Job updateJob(Long id, JobRequest jobRequest);
 }

@@ -27,7 +27,7 @@ public class AppExceptionHandling {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public  ModelAndView badRequest(JobNotFoundException ex){
+    public  ModelAndView badRequest(MissingServletRequestParameterException ex){
         ModelAndView mv = new ModelAndView();
         mv.addObject("errorMessage", ex.getMessage());
         mv.setViewName("errors/400");

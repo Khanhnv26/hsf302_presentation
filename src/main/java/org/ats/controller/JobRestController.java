@@ -1,7 +1,7 @@
 package org.ats.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.ats.dto.JobDto;
+import org.ats.dto.JobRequest;
 import org.ats.services.JobService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,21 +22,18 @@ import java.util.List;
 public class JobRestController {
     private final JobService jobService;
 
-    // ============================================================
-    // A — List + Read
-    // ============================================================
 
-    // TODO A: gọi jobService.getAll(keyword) -> map sang List<JobDto> (dùng toDto)
+
     @GetMapping
-    public List<JobDto> list(@RequestParam(required = false) String keyword) {
-        return null;
+    public List<JobRequest> list(@RequestParam(required = false) String keyword) {
+        return jobService.getAllAsDto(keyword);
     }
 
-    // TODO A: lấy JobRequest qua jobService.getJobById(id) rồi map sang JobDto,
-    // hoặc thêm service mới trả JobDto trực tiếp. Ném JobNotFoundException nếu không thấy.
+
     @GetMapping("/{id}")
-    public JobDto getById(@PathVariable Long id) {
-        return null;
+    public JobRequest getById(@PathVariable Long id) {
+
+        return jobService.getJobById(id);
     }
 
     // ============================================================
@@ -44,9 +41,9 @@ public class JobRestController {
     // ============================================================
 
     // TODO B: validate dto (title != blank, deadline != null), map sang JobRequest,
-    // gọi jobService.createJob, trả 201 + JobDto. Lỗi -> ApiExceptionHandling.
+    // gọi jobService.createJob, trả 201 + JobRequest. Lỗi -> ApiExceptionHandling.
     @PostMapping
-    public ResponseEntity<JobDto> create(@RequestBody JobDto dto) {
+    public ResponseEntity<JobRequest> create(@RequestBody JobRequest dto) {
         return null;
     }
 
@@ -55,9 +52,9 @@ public class JobRestController {
     // ============================================================
 
     // TODO C: load existing job qua id, gán field từ dto, gọi jobService.updateJob(id, JobRequest),
-    // trả JobDto. Ném JobNotFoundException nếu không thấy.
+    // trả JobRequest. Ném JobNotFoundException nếu không thấy.
     @PutMapping("/{id}")
-    public JobDto update(@PathVariable Long id, @RequestBody JobDto dto) {
+    public JobRequest update(@PathVariable Long id, @RequestBody JobRequest dto) {
         return null;
     }
 
