@@ -2,7 +2,10 @@ package org.ats.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.ats.dto.JobDto;
+import org.ats.dto.JobRequest;
+import org.ats.entities.Job;
 import org.ats.services.JobService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,9 +50,45 @@ public class JobRestController {
     // gọi jobService.createJob, trả 201 + JobDto. Lỗi -> ApiExceptionHandling.
     @PostMapping
     public ResponseEntity<JobDto> create(@RequestBody JobDto dto) {
-        return null;
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            throw new RuntimeException("title must not be blank");
+        }
+        if (dto.getDeadline() == null) {
+            throw new RuntimeException("deadline must not be null");
+        }
+        if (dto.getMinSalary() == null || dto.getMaxSalary() == null
+                || dto.getMinSalary() > dto.getMaxSalary()) {
+            throw new RuntimeException("salary range invalid");
+        }
+        JobRequest req = JobRequest.builder()
+                .title(dto.getTitle().trim())
+                .description(dto.getDescription())
+                .location(dto.getLocation())
+                .minSalary(dto.getMinSalary())
+                .maxSalary(dto.getMaxSalary())
+                .deadline(dto.getDeadline())
+                .departmentId(dto.getDepartmentId())
+                .skillIds(dto.getSkillIds())
+                .build();
+        Job created = jobService.createJob(req);
+        JobDto response = toJobDto(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
+    private JobDto toJobDto(Job job) {
+        return JobDto.builder()
+                .id(job.getId())
+                .title(job.getTitle())
+                .description(job.getDescription())
+                .location(job.getLocation())
+                .minSalary(job.getMinSalary())
+                .maxSalary(job.getMaxSalary())
+                .deadline(job.getDeadline() != null
+                        ? job.getDeadline().toLocalDate() : null)
+                .status(job.getStatus())
+                .departmentId(job.getDepartment() != null
+                        ? job.getDepartment().getId() : null)
+                .build();
+    }
     // ============================================================
     // C — Edit + Delete
     // ============================================================
@@ -58,12 +97,26 @@ public class JobRestController {
     // trả JobDto. Ném JobNotFoundException nếu không thấy.
     @PutMapping("/{id}")
     public JobDto update(@PathVariable Long id, @RequestBody JobDto dto) {
-        return null;
+        JobRequest req = JobRequest.builder()
+                .id(id)
+                .title(dto.getTitle() != null ? dto.getTitle().trim() : null)
+                .description(dto.getDescription())
+                .location(dto.getLocation())
+                .minSalary(dto.getMinSalary())
+                .maxSalary(dto.getMaxSalary())
+                .deadline(dto.getDeadline())
+                .departmentId(dto.getDepartmentId())
+                .skillIds(dto.getSkillIds())
+                .build();
+
+        Job updated = jobService.updateJob(id, req);
+        return toJobDto(updated);
     }
 
     // TODO C: gọi jobService.delete(id), trả 204. Lỗi -> ApiExceptionHandling.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return null;
+        jobService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
