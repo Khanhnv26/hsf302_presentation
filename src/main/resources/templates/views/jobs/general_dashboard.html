@@ -38,11 +38,6 @@
                         </ul>
                     </li>
                 </ul>
-                <div class="d-flex align-items-center gap-2">
-                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search (async)..."
-                           aria-label="Search">
-                    <button class="btn btn-outline-secondary" type="button" id="modeToggle">jQuery</button>
-                </div>
             </div>
         </div>
     </nav>
@@ -55,6 +50,10 @@
             <hr>
             <p class="text-success" th:text="${message}"></p>
 
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <input class="form-control" type="search" id="searchInput" placeholder="Search title / description...">
+                <button class="btn btn-outline-secondary" type="button" id="modeToggle">jQuery</button>
+            </div>
             <table class="table table-striped align-middle">
                 <thead>
                 <tr>

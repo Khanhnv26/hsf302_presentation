@@ -23,7 +23,6 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @EntityGraph(attributePaths = {"department", "skills", "skills.skill"})
     List<Job> findAll();
 
-    @EntityGraph(attributePaths = {"department", "skills", "skills.skill"})
     List<Job> findByTitleContainingOrDescriptionContaining(String title, String des);
     List<Job> findByStatus(String status);
 
