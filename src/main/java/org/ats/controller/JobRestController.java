@@ -25,21 +25,18 @@ import java.util.List;
 public class JobRestController {
     private final JobService jobService;
 
-    // ============================================================
-    // A — List + Read
-    // ============================================================
 
-    // TODO A: gọi jobService.getAll(keyword) -> map sang List<JobDto> (dùng toDto)
+
     @GetMapping
-    public List<JobDto> list(@RequestParam(required = false) String keyword) {
-        return null;
+    public List<JobRequest> list(@RequestParam(required = false) String keyword) {
+        return jobService.getAllAsDto(keyword);
     }
 
-    // TODO A: lấy JobRequest qua jobService.getJobById(id) rồi map sang JobDto,
-    // hoặc thêm service mới trả JobDto trực tiếp. Ném JobNotFoundException nếu không thấy.
+
     @GetMapping("/{id}")
-    public JobDto getById(@PathVariable Long id) {
-        return null;
+    public JobRequest getById(@PathVariable Long id) {
+
+        return jobService.getJobById(id);
     }
 
     // ============================================================
@@ -47,7 +44,7 @@ public class JobRestController {
     // ============================================================
 
     // TODO B: validate dto (title != blank, deadline != null), map sang JobRequest,
-    // gọi jobService.createJob, trả 201 + JobDto. Lỗi -> ApiExceptionHandling.
+    // gọi jobService.createJob, trả 201 + JobRequest. Lỗi -> ApiExceptionHandling.
     @PostMapping
     public ResponseEntity<JobDto> create(@RequestBody JobDto dto) {
         if (dto.getTitle() == null || dto.getTitle().isBlank()) {
@@ -94,7 +91,7 @@ public class JobRestController {
     // ============================================================
 
     // TODO C: load existing job qua id, gán field từ dto, gọi jobService.updateJob(id, JobRequest),
-    // trả JobDto. Ném JobNotFoundException nếu không thấy.
+    // trả JobRequest. Ném JobNotFoundException nếu không thấy.
     @PutMapping("/{id}")
     public JobDto update(@PathVariable Long id, @RequestBody JobDto dto) {
         JobRequest req = JobRequest.builder()

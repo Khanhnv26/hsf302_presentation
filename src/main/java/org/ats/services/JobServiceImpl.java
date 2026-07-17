@@ -18,10 +18,11 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -53,8 +54,21 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    public List<JobRequest> getAllAsDto(String keyword) {
+        List<Job> jobs = jobRepository.findAll();
+        Stream<Job> stream = jobs.stream();
+        if (keyword != null && !keyword.isBlank()) {
+            String kw = keyword.toLowerCase();
+            stream = stream.filter(j ->
+                (j.getTitle() != null && j.getTitle().toLowerCase().contains(kw)) ||
+                (j.getDescription() != null && j.getDescription().toLowerCase().contains(kw)));
+        }
+        return stream.map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Override
     public void delete(Long id) {
-        Job job = jobRepository.findById(id).orElseThrow(() -> new JobNotFoundException("Job not found: " + id));
+        Job job = jobRepository.findById(id).orElseThrow(() -> new JobNotFoundException("Job not found"));
 
         jobRepository.delete(job);
     }
@@ -79,6 +93,8 @@ public class JobServiceImpl implements JobService {
         }
         return jobRepository.findAllByStatusAndKeyword(JobStatus.PUBLISH.toString(), criteria.getKeyword().trim(), pageable);
     }
+
+
 
     @Override
     public Job updateJob(Long id, JobRequest jobRequest) {
@@ -131,48 +147,50 @@ public class JobServiceImpl implements JobService {
         return jobRepository.save(job);
     }
 
-    // TODO A: hiện thực toJobDto(Job) -> JobDto cho REST API (đủ field: status, departmentId, skillIds, publishedAt).
-    private org.ats.dto.JobDto toJobDto(Job job) {
-        return null;
-    }
 
-    private JobRequest toDto(Job job) {
-        JobRequest jobRequest = JobRequest.builder()
+
+    @Override
+    public JobRequest toDto(Job job) {
+        JobRequest dto  = JobRequest.builder()
                 .id(job.getId())
                 .title(job.getTitle())
                 .description(job.getDescription())
                 .location(job.getLocation())
                 .minSalary(job.getMinSalary())
                 .maxSalary(job.getMaxSalary())
+                .jobType(job.getJobType())
+                .status(job.getStatus())
                 .build();
 
         if (job.getDeadline() != null) {
-            jobRequest.setDeadline(job.getDeadline().toLocalDate());
+            dto.setDeadline(job.getDeadline().toLocalDate());
+        }
+
+        if (job.getPublishedAt() != null) {
+            dto.setPublishedAt(job.getPublishedAt().toLocalDate());
         }
 
         if (job.getDepartment() != null) {
-            jobRequest.setDepartmentId(job.getDepartment().getId());
+            dto.setDepartmentId(job.getDepartment().getId());
         }
 
-        List<JobSkill> jobSkills = jobSkillDao.findByJobId(job.getId());
+        List<JobSkill> jobSkills = new ArrayList<>(job.getSkills());
+        dto.setSkillIds(jobSkills.stream()
+                .map(js -> js.getSkill().getId())
+                .collect(Collectors.toList()));
 
-        List<Long> jobSkillIds = jobSkills.stream().map((jobSkill -> {
-            return jobSkill.getSkill().getId();
-        })).collect(Collectors.toList());
-
-        jobRequest.setSkillIds(jobSkillIds);
-
-        return jobRequest;
+        return dto;
     }
 
     private Job toEntity(JobRequest jobRequest) {
-        Set<JobSkill> jobSkills = jobRequest.getSkillIds().stream().map((skillId) -> {
-            JobSkill jobSkill = new JobSkill();
-            jobSkill.setSkill(Skill.builder().id(skillId).build()); // 1, 3
-
-            return jobSkill;
-        }).collect(Collectors.toSet());
-
+        Set<JobSkill> jobSkills = new java.util.HashSet<>();
+        if (jobRequest.getSkillIds() != null) {
+            jobSkills = jobRequest.getSkillIds().stream().map(skillId -> {
+                JobSkill jobSkill = new JobSkill();
+                jobSkill.setSkill(Skill.builder().id(skillId).build());
+                return jobSkill;
+            }).collect(Collectors.toSet());
+        }
 
         Job job = Job.builder()
                 .id(jobRequest.getId())
@@ -184,6 +202,7 @@ public class JobServiceImpl implements JobService {
                 .location(jobRequest.getLocation())
                 .maxSalary(jobRequest.getMaxSalary())
                 .minSalary(jobRequest.getMinSalary())
+                .jobType(jobRequest.getJobType())
                 .status(JobStatus.DRAFT.toString())
                 .build();
 

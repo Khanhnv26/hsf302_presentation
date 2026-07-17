@@ -18,6 +18,9 @@ public class JobRequest {
     private Double minSalary;
     private Double maxSalary;
     private LocalDate deadline;
+    private String jobType;
+    private String status;
+    private LocalDate publishedAt;
     private Long departmentId;
     private List<Long> skillIds; // 1, 3
 }
