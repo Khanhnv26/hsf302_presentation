@@ -4,8 +4,6 @@
 // C: deleteJob + confirmAndDelete + delete modal
 // ============================================================
 
-let mode = 'jquery';
-
 document.addEventListener('DOMContentLoaded', () => {
     loadJobs();
 
@@ -24,15 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmAndDelete(deleteBtn.dataset.id);
         }
     });
-
-    const modeToggle = document.getElementById('modeToggle');
-    if (modeToggle) {
-        modeToggle.addEventListener('click', () => {
-            mode = mode === 'jquery' ? 'fetch' : 'jquery';
-            modeToggle.textContent = mode === 'jquery' ? 'Fetch' : 'jQuery';
-            loadJobs(document.getElementById('searchInput').value.trim());
-        });
-    }
 });
 
 // ============================================================
@@ -42,20 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadJobs(keyword) {
     const url = keyword ? `/api/jobs?keyword=${encodeURIComponent(keyword)}` : '/api/jobs';
 
-    if (mode === 'jquery') {
-        $.getJSON(url)
-            .done(data => renderJobs(data))
-            .fail(handleApiError);
-    } else {
-        try {
-            const r = await fetch(url);
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            const data = await r.json();
-            renderJobs(data);
-        } catch (err) {
-            handleApiError(err);
-        }
-    }
+    $.getJSON(url)
+        .done(data => renderJobs(data))
+        .fail(handleApiError);
 }
 
 function renderJobs(jobs) {
@@ -81,7 +59,7 @@ function renderJobs(jobs) {
               })
             : '-';
 
-        return `<tr>
+        return `<tr data-id="${job.id}">
             <td>${job.id}</td>
             <td>${job.title}</td>
             <td>${job.description || '-'}</td>
@@ -104,48 +82,26 @@ function renderJobs(jobs) {
 // ============================================================
 
 function confirmAndDelete(id) {
-    // Set id vào modal
     document.getElementById('deleteJobId').textContent = id;
     const confirmBtn = document.getElementById('confirmDeleteBtn');
-
-    // Bind click event (replace any previous binding)
     const newBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-    newBtn.addEventListener('click', () => {
-        const modal = bootstrap.Modal.getInstance(
-            document.getElementById('deleteConfirmModal'));
-        modal.hide();
-        deleteJob(id);
+    newBtn.addEventListener('click', async () => {
+        bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        await deleteJob(id);
     });
-
-    // Show modal
-    const modalEl = document.getElementById('deleteConfirmModal');
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+    new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
 }
 
 async function deleteJob(id) {
-    // TODO C
     try {
-        const url = `/api/jobs/${id}`;
-        if (mode === 'jquery') {
-            await $.ajax({ url, type: 'DELETE' });
-        } else {
-            const r = await fetch(url, { method: 'DELETE' });
-            if (!r.ok) throw await toError(r);
-        }
-
-        // Remove row khỏi DOM
+        await $.ajax({ url: `/api/jobs/${id}`, type: 'DELETE' });
         const row = document.querySelector(`tr[data-id="${id}"]`);
         if (row) row.remove();
-
-        // Nếu bảng rỗng → hiện "No jobs found"
-        const tbody = document.getElementById('jobTable');
-        if (tbody && tbody.children.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10"
-                class="text-center text-muted py-4">No jobs found.</td></tr>`;
+        if (document.querySelectorAll('#jobTable tr').length === 0) {
+            document.getElementById('jobTable').innerHTML =
+                '<tr><td colspan="10" class="text-center text-muted py-4">No jobs found.</td></tr>';
         }
-
         toast('Job deleted successfully', 'success');
     } catch (err) {
         handleApiError(err);
@@ -168,6 +124,7 @@ function handleApiError(err) {
 
 function toast(message, type) {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
     const id = 'toast-' + Date.now();
     const html = `
         <div id="${id}" class="toast align-items-center text-white bg-${type} border-0" role="alert">

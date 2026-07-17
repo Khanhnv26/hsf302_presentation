@@ -18,6 +18,8 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -108,6 +110,7 @@ public class JobServiceImpl implements JobService {
         job.setLocation(jobRequest.getLocation());
         job.setMinSalary(jobRequest.getMinSalary());
         job.setMaxSalary(jobRequest.getMaxSalary());
+        job.setJobType(jobRequest.getJobType());
 
         // 3. Convert LocalDate → OffsetDateTime (giống toEntity)
         if (jobRequest.getDeadline() != null) {
