@@ -14,9 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let debounceTimer;
         searchInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                loadJobs(searchInput.value.trim());
-            }, 300);
+            debounceTimer = setTimeout(() => loadJobs(searchInput.value.trim()), 300);
         });
     }
 

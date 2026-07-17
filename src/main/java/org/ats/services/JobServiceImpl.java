@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +54,15 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public List<JobRequest> getAllAsDto(String keyword) {
-        return getAll(keyword).stream().map(this::toDto).collect(Collectors.toList());
+        List<Job> jobs = jobRepository.findAll();
+        Stream<Job> stream = jobs.stream();
+        if (keyword != null && !keyword.isBlank()) {
+            String kw = keyword.toLowerCase();
+            stream = stream.filter(j ->
+                (j.getTitle() != null && j.getTitle().toLowerCase().contains(kw)) ||
+                (j.getDescription() != null && j.getDescription().toLowerCase().contains(kw)));
+        }
+        return stream.map(this::toDto).collect(Collectors.toList());
     }
 
     @Override
