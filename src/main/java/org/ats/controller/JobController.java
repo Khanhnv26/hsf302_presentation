@@ -30,7 +30,7 @@ public class JobController {
         List<Department> departments = departmentService.findAll();
         List<SkillResponse> skills = skillService.findAll();
         // Add to model
-        ModelAndView mv = new ModelAndView("jobs/job_detail");
+        ModelAndView mv = new ModelAndView("views/jobs/job_detail");
         mv.addObject("departments", departments);
         mv.addObject("skills", skills);
         mv.addObject("job", new JobRequest());
@@ -78,7 +78,7 @@ public class JobController {
         JobRequest job = jobService.getJobById(id);
         model.addAttribute("job", job);
 
-        return "jobs/job_detail";
+        return "views/jobs/job_detail";
     }
 
     @GetMapping(path = "{id}/delete")

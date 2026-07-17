@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,7 +69,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public void delete(Long id) {
-        Job job = jobRepository.findById(id).orElseThrow(() -> new JobNotFoundException("Job not found"));
+        Job job = jobRepository.findById(id).orElseThrow(() -> new JobNotFoundException("Job not found: " + id));
 
         jobRepository.delete(job);
     }
@@ -98,8 +100,53 @@ public class JobServiceImpl implements JobService {
     @Override
     public Job updateJob(Long id, JobRequest jobRequest) {
         // TODO C: load existing job by id, gán field từ jobRequest, save & return.
-        // Ném JobNotFoundException nếu id không tồn tại.
-        return null;
+        // 1. Load existing
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new JobNotFoundException("Job not found: " + id));
+
+        // 2. Gán field từ jobRequest
+        job.setTitle(jobRequest.getTitle());
+        job.setDescription(jobRequest.getDescription());
+        job.setLocation(jobRequest.getLocation());
+        job.setMinSalary(jobRequest.getMinSalary());
+        job.setMaxSalary(jobRequest.getMaxSalary());
+        job.setJobType(jobRequest.getJobType());
+
+        // 3. Convert LocalDate → OffsetDateTime (giống toEntity)
+        if (jobRequest.getDeadline() != null) {
+            job.setDeadline(OffsetDateTime.of(
+                    jobRequest.getDeadline(), LocalTime.now(), ZoneOffset.ofHours(7)));
+        } else {
+            job.setDeadline(null);
+        }
+
+        // 4. Department
+        if (jobRequest.getDepartmentId() != null) {
+            job.setDepartment(Department.builder()
+                    .id(jobRequest.getDepartmentId())
+                    .build());
+        } else {
+            job.setDepartment(null);
+        }
+
+        // 5. Replace skills (xóa cũ, set mới)
+        Set<JobSkill> newSkills = new HashSet<>();
+
+        if (jobRequest.getSkillIds() != null) {
+            for (Long skillId : jobRequest.getSkillIds()) {
+                JobSkill jobSkill = new JobSkill();
+
+                jobSkill.setSkill(Skill.builder().id(skillId).build());
+                jobSkill.setJob(job);
+
+                newSkills.add(jobSkill);
+            }
+        }
+
+        job.setSkills(newSkills);
+
+        // 6. Save
+        return jobRepository.save(job);
     }
 
 

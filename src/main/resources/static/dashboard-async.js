@@ -4,8 +4,6 @@
 // C: deleteJob + confirmAndDelete + delete modal
 // ============================================================
 
-let mode = 'jquery';
-
 document.addEventListener('DOMContentLoaded', () => {
     loadJobs();
 
@@ -24,15 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmAndDelete(deleteBtn.dataset.id);
         }
     });
-
-    const modeToggle = document.getElementById('modeToggle');
-    if (modeToggle) {
-        modeToggle.addEventListener('click', () => {
-            mode = mode === 'jquery' ? 'fetch' : 'jquery';
-            modeToggle.textContent = mode === 'jquery' ? 'Fetch' : 'jQuery';
-            loadJobs(document.getElementById('searchInput').value.trim());
-        });
-    }
 });
 
 // ============================================================
@@ -42,20 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadJobs(keyword) {
     const url = keyword ? `/api/jobs?keyword=${encodeURIComponent(keyword)}` : '/api/jobs';
 
-    if (mode === 'jquery') {
-        $.getJSON(url)
-            .done(data => renderJobs(data))
-            .fail(handleApiError);
-    } else {
-        try {
-            const r = await fetch(url);
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            const data = await r.json();
-            renderJobs(data);
-        } catch (err) {
-            handleApiError(err);
-        }
-    }
+    $.getJSON(url)
+        .done(data => renderJobs(data))
+        .fail(handleApiError);
 }
 
 function renderJobs(jobs) {
@@ -81,7 +59,7 @@ function renderJobs(jobs) {
               })
             : '-';
 
-        return `<tr>
+        return `<tr data-id="${job.id}">
             <td>${job.id}</td>
             <td>${job.title}</td>
             <td>${job.description || '-'}</td>
@@ -104,11 +82,30 @@ function renderJobs(jobs) {
 // ============================================================
 
 function confirmAndDelete(id) {
-    // TODO C
+    document.getElementById('deleteJobId').textContent = id;
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+    newBtn.addEventListener('click', async () => {
+        bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        await deleteJob(id);
+    });
+    new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
 }
 
 async function deleteJob(id) {
-    // TODO C
+    try {
+        await $.ajax({ url: `/api/jobs/${id}`, type: 'DELETE' });
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        if (row) row.remove();
+        if (document.querySelectorAll('#jobTable tr').length === 0) {
+            document.getElementById('jobTable').innerHTML =
+                '<tr><td colspan="10" class="text-center text-muted py-4">No jobs found.</td></tr>';
+        }
+        toast('Job deleted successfully', 'success');
+    } catch (err) {
+        handleApiError(err);
+    }
 }
 
 // ============================================================
@@ -127,6 +124,7 @@ function handleApiError(err) {
 
 function toast(message, type) {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
     const id = 'toast-' + Date.now();
     const html = `
         <div id="${id}" class="toast align-items-center text-white bg-${type} border-0" role="alert">

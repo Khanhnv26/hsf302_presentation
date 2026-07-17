@@ -2,7 +2,9 @@ package org.ats.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.ats.dto.JobRequest;
+import org.ats.entities.Job;
 import org.ats.services.JobService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,27 +42,37 @@ public class JobRestController {
     // B — Create
     // ============================================================
 
-    // TODO B: validate dto (title != blank, deadline != null), map sang JobRequest,
-    // gọi jobService.createJob, trả 201 + JobRequest. Lỗi -> ApiExceptionHandling.
     @PostMapping
     public ResponseEntity<JobRequest> create(@RequestBody JobRequest dto) {
-        return null;
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            throw new RuntimeException("title must not be blank");
+        }
+        if (dto.getDeadline() == null) {
+            throw new RuntimeException("deadline must not be null");
+        }
+        if (dto.getMinSalary() == null || dto.getMaxSalary() == null
+                || dto.getMinSalary() > dto.getMaxSalary()) {
+            throw new RuntimeException("salary range invalid");
+        }
+        Job created = jobService.createJob(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.toDto(created));
     }
 
     // ============================================================
     // C — Edit + Delete
     // ============================================================
 
-    // TODO C: load existing job qua id, gán field từ dto, gọi jobService.updateJob(id, JobRequest),
-    // trả JobRequest. Ném JobNotFoundException nếu không thấy.
     @PutMapping("/{id}")
     public JobRequest update(@PathVariable Long id, @RequestBody JobRequest dto) {
-        return null;
+        dto.setId(id);
+        Job updated = jobService.updateJob(id, dto);
+        return jobService.toDto(updated);
     }
 
-    // TODO C: gọi jobService.delete(id), trả 204. Lỗi -> ApiExceptionHandling.
+    // Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return null;
+        jobService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

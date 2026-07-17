@@ -4,36 +4,76 @@
 // C: loadJobForEdit + submitUpdate
 // ============================================================
 
-let mode = 'jquery'; // 'jquery' | 'fetch'
-let editingId = null; // null = create mode, != null = edit mode
+let editingId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    detectEditMode();
+
     loadDepartments();
     loadSkills();
 
-    // TODO C: detect edit mode từ URL path /jobs/{id} hoặc query param ?id=
-    //         -> set editingId, gọi loadJobForEdit(id), đổi title form + nút Save -> "Update"
+    if (editingId != null) {
+        loadJobForEdit(editingId);
+    }
 
     document.getElementById('job-form').addEventListener('submit', onSubmit);
-
-    // TODO B/C: bind mode toggle button (#modeToggle) -> switch mode
 });
+
+function detectEditMode() {
+    const pathMatch = window.location.pathname.match(/\/jobs\/(\d+)/);
+    if (pathMatch) {
+        editingId = parseInt(pathMatch[1], 10);
+    } else {
+        const queryId = new URLSearchParams(window.location.search).get('id');
+        if (queryId) editingId = parseInt(queryId, 10);
+    }
+
+    if (editingId != null) {
+        const formTitle = document.getElementById('formTitle');
+        if (formTitle) formTitle.textContent = `Edit Job #${editingId}`;
+
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) saveBtn.textContent = 'Update';
+    }
+}
 
 // ============================================================
 // B — Dropdowns (Departments + Skills)
 // ============================================================
 
-// TODO B: GET /api/departments -> fill <select id="departmentId">
-//  - jQuery: $.getJSON
-//  - fetch:  await fetch + json
-async function loadDepartments() {
-    // TODO B
+function loadDepartments() {
+    $.getJSON('/api/departments')
+        .done(data => {
+            const select = document.getElementById('departmentId');
+            if (!select) return;
+            data.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.departmentName;
+                select.appendChild(opt);
+            });
+        })
+        .fail(handleApiError);
 }
 
-// TODO B: GET /api/skills -> fill checkbox group (#skillIds)
-//  - mỗi skill: <input type="checkbox" value="${skill.id}" name="skillIds"> ${skill.skillName}
-async function loadSkills() {
-    // TODO B
+function loadSkills() {
+    $.getJSON('/api/skills')
+        .done(data => {
+            const wrap = document.getElementById('skillIds');
+            if (!wrap) return;
+            wrap.innerHTML = '';
+            data.forEach(s => {
+                const id = `skill_${s.id}`;
+                const div = document.createElement('div');
+                div.className = 'form-check';
+                div.innerHTML = `
+                    <input class="form-check-input" type="checkbox"
+                           name="skillIds" value="${s.id}" id="${id}">
+                    <label class="form-check-label" for="${id}">${s.skillName}</label>`;
+                wrap.appendChild(div);
+            });
+        })
+        .fail(handleApiError);
 }
 
 // ============================================================
@@ -50,52 +90,110 @@ async function onSubmit(e) {
     }
 }
 
-// TODO B: gom giá trị từ form -> object JobDto
-//  { title, description, location, minSalary, maxSalary, deadline, departmentId, skillIds: [...] }
 function collectForm() {
-    // TODO B
-    return {};
+    const skillIds = Array.from(
+        document.querySelectorAll('input[name="skillIds"]:checked')
+    ).map(cb => parseInt(cb.value, 10));
+
+    return {
+        title: document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value,
+        location: document.getElementById('location').value.trim(),
+        minSalary: parseFloat(document.getElementById('minSalary').value),
+        maxSalary: parseFloat(document.getElementById('maxSalary').value),
+        deadline: document.getElementById('deadline').value || null,
+        departmentId: (() => {
+            const v = document.getElementById('departmentId').value;
+            return v ? parseInt(v, 10) : null;
+        })(),
+        skillIds: skillIds
+    };
 }
 
-// TODO B: POST /api/jobs (Content-Type: application/json, body JSON)
-//  - jQuery: $.ajax({type:'POST', contentType:'application/json', data: JSON.stringify(dto)})
-//  - fetch:  await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(dto)})
-//  - thành công -> toast "Created" + reset form
-//  - lỗi -> handleApiError
 async function submitCreate(dto) {
-    // TODO B
+    try {
+        await $.ajax({
+            url: '/api/jobs',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(dto)
+        });
+        toast('Job created successfully', 'success');
+        document.getElementById('job-form').reset();
+        setTimeout(() => { window.location.href = '/jobs'; }, 1500);
+    } catch (err) {
+        handleApiError(err);
+    }
 }
 
 // ============================================================
 // C — Edit (Load + Update)
 // ============================================================
 
-// TODO C: GET /api/jobs/{id} -> fill form fields + set editingId
-//  - jQuery: $.getJSON
-//  - fetch:  await fetch + json
-async function loadJobForEdit(id) {
-    // TODO C
+function loadJobForEdit(id) {
+    $.getJSON(`/api/jobs/${id}`)
+        .done(data => {
+            document.getElementById('title').value = data.title || '';
+            document.getElementById('description').value = data.description || '';
+            document.getElementById('location').value = data.location || '';
+            document.getElementById('minSalary').value = data.minSalary ?? '';
+            document.getElementById('maxSalary').value = data.maxSalary ?? '';
+            document.getElementById('deadline').value = data.deadline || '';
+            document.getElementById('departmentId').value =
+                data.departmentId != null ? data.departmentId : '';
+
+            const skillIds = (data.skillIds || []).map(id => parseInt(id, 10));
+            document.querySelectorAll('input[name="skillIds"]').forEach(cb => {
+                cb.checked = skillIds.includes(parseInt(cb.value, 10));
+            });
+        })
+        .fail(handleApiError);
 }
 
-// TODO C: PUT /api/jobs/{id} (Content-Type: application/json, body JSON)
-//  - jQuery: $.ajax({type:'PUT', ...})
-//  - fetch:  await fetch(url, {method:'PUT', ...})
-//  - thành công -> toast "Updated"
-//  - lỗi -> handleApiError
 async function submitUpdate(id, dto) {
-    // TODO C
+    try {
+        await $.ajax({
+            url: `/api/jobs/${id}`,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(dto)
+        });
+        toast('Job updated successfully', 'success');
+        setTimeout(() => { window.location.href = '/jobs'; }, 1500);
+    } catch (err) {
+        handleApiError(err);
+    }
 }
 
 // ============================================================
-// Shared — error + toast (B hoặc C hiện thực, 2 người dùng chung)
+// Shared — error + toast
 // ============================================================
 
-// TODO: hiển thị lỗi từ API response, dùng toast()
 function handleApiError(err) {
-    // TODO
+    let msg = 'Unexpected error';
+    if (err.responseJSON && err.responseJSON.error) {
+        msg = err.responseJSON.error;
+    } else if (err.message) {
+        msg = err.message;
+    }
+    toast(msg, 'danger');
+    console.error(err);
 }
 
-// TODO: Bootstrap toast/alert trong #toastContainer
 function toast(message, type) {
-    // TODO
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const id = 'toast-' + Date.now();
+    const html = `
+        <div id="${id}" class="toast align-items-center text-white bg-${type} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+    const el = document.getElementById(id);
+    const bsToast = new bootstrap.Toast(el, { delay: 3000 });
+    bsToast.show();
+    el.addEventListener('hidden.bs.toast', () => el.remove());
 }
