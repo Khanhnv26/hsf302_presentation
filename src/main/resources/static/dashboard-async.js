@@ -81,7 +81,7 @@ function renderJobs(jobs) {
               })
             : '-';
 
-        return `<tr>
+        return `<tr data-id="${job.id}">
             <td>${job.id}</td>
             <td>${job.title}</td>
             <td>${job.description || '-'}</td>
@@ -135,13 +135,17 @@ async function deleteJob(id) {
             if (!r.ok) throw await toError(r);
         }
 
-        // Remove row khỏi DOM
+        // Remove row khỏi DOM (fallback: gọi lại loadJobs() nếu không tìm thấy row)
         const row = document.querySelector(`tr[data-id="${id}"]`);
-        if (row) row.remove();
+        if (row) {
+            row.remove();
+        } else {
+            loadJobs(document.getElementById('searchInput')?.value.trim() || '');
+        }
 
-        // Nếu bảng rỗng → hiện "No jobs found"
+        // Nếu không còn row nào (chỉ đếm row có data-id) → hiện "No jobs found"
         const tbody = document.getElementById('jobTable');
-        if (tbody && tbody.children.length === 0) {
+        if (tbody && tbody.querySelectorAll('tr[data-id]').length === 0) {
             tbody.innerHTML = `<tr><td colspan="10"
                 class="text-center text-muted py-4">No jobs found.</td></tr>`;
         }
@@ -153,8 +157,32 @@ async function deleteJob(id) {
 }
 
 // ============================================================
-// Shared — error + toast
+// Shared — fetchJson + toError + handleApiError + toast
 // ============================================================
+
+async function fetchJson(url) {
+    if (mode === 'jquery') {
+        return await $.getJSON(url);
+    }
+    const r = await fetch(url);
+    if (!r.ok) throw await toError(r);
+    return await r.json();
+}
+
+async function toError(response) {
+    try {
+        const body = await response.json();
+        const err = new Error(body.error || `HTTP ${response.status}`);
+        err.body = body;
+        if (body.details) {
+            const msgs = Object.values(body.details).join('; ');
+            err.message = `${body.error}: ${msgs}`;
+        }
+        return err;
+    } catch {
+        return new Error(`HTTP ${response.status}`);
+    }
+}
 
 function handleApiError(err) {
     let msg = 'Something went wrong';

@@ -232,8 +232,32 @@ async function submitUpdate(id, dto) {
 }
 
 // ============================================================
-// Shared — error + toast (B hoặc C hiện thực, 2 người dùng chung)
+// Shared — fetchJson + toError + handleApiError + toast
 // ============================================================
+
+async function fetchJson(url) {
+    if (mode === 'jquery') {
+        return await $.getJSON(url);
+    }
+    const r = await fetch(url);
+    if (!r.ok) throw await toError(r);
+    return await r.json();
+}
+
+async function toError(response) {
+    try {
+        const body = await response.json();
+        const err = new Error(body.error || `HTTP ${response.status}`);
+        err.body = body;
+        if (body.details) {
+            const msgs = Object.values(body.details).join('; ');
+            err.message = `${body.error}: ${msgs}`;
+        }
+        return err;
+    } catch {
+        return new Error(`HTTP ${response.status}`);
+    }
+}
 
 // TODO: hiển thị lỗi từ API response, dùng toast()
 function handleApiError(err) {
